@@ -55,21 +55,16 @@ def connect_with_azure_app(site_url: str):
         return ctx
 
     except KeyError:
-        msg = (
-            "Missing secrets. Add to .streamlit/secrets.toml:
-"
-            "[sharepoint_azure]
-"
-            'tenant_id = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
-'
-            'client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
-'
-            'client_secret = "<YOUR_CLIENT_SECRET_VALUE>"
-'
-            'site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
-'
-        )
-        raise RuntimeError(msg)# --- Local-only cookie-based SharePoint connector (optional / lazy import) ---
+    msg = """Missing secrets. Add to .streamlit/secrets.toml:
+
+[sharepoint_azure]
+tenant_id = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
+client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
+client_secret = "<YOUR_CLIENT_SECRET_VALUE>"
+site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
+"""
+    raise RuntimeError(msg)
+
 import importlib
 
 def _browser_cookie_available() -> bool:

@@ -1,0 +1,18 @@
+streamlit==1.48.1
+pandas==2.3.1
+openpyxl==3.1.5
+PyPDF2==3.0.1
+python-docx==1.2.0
+
+# SharePoint client
+office365-rest-python-client==2.6.2
+
+# Keep what Cloud successfully used earlier
+requests==2.32.5
+urllib3==2.5.0
+cryptography==45.0.6
+lxml==6.0.0
+
+
+
+

@@ -54,7 +54,7 @@ def connect_with_azure_app(site_url: str):
         ctx.web.get().execute_query()  # sanity ping
         return ctx
 
-    except KeyError:
+except KeyError:
     msg = """Missing secrets. Add to .streamlit/secrets.toml:
 
 [sharepoint_azure]
@@ -63,7 +63,7 @@ client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
 client_secret = "<YOUR_CLIENT_SECRET_VALUE>"
 site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
 """
-    raise RuntimeError(msg)
+raise RuntimeError(msg)
 
 import importlib
 

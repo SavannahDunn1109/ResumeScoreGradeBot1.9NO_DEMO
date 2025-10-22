@@ -1,3 +1,11 @@
+# --- bootstrap: ensure msal is available ---
+try:
+    import msal  # noqa: F401
+except ModuleNotFoundError:
+    import sys, subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "msal>=1.34.0"])
+    import msal  # now available
+
 import msal
 # app_with_sharepoint_and_dynamic_requirements_azure.py
 import io

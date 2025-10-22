@@ -1,11 +1,3 @@
-# --- bootstrap: ensure msal is available ---
-try:
-    import msal  # noqa: F401
-except ModuleNotFoundError:
-  
-    import msal  # now available
-
-import msal
 # app_with_sharepoint_and_dynamic_requirements_azure.py
 import io
 import os
@@ -16,11 +8,15 @@ import pandas as pd
 import streamlit as st
 from docx import Document
 from PyPDF2 import PdfReader
+
+# MSAL must be installed via requirements.txt in the app root.
 try:
     import msal
 except ModuleNotFoundError:
-    import streamlit as st
-    st.error("MSAL is not installed. Make sure `msal` is in requirements.txt and redeploy. If on Streamlit Cloud, set runtime.txt to 3.11.")
+    st.error(
+        "MSAL is not installed. Make sure `msal` is listed in requirements.txt at the app root, "
+        "then Restart the app environment."
+    )
     st.stop()
 
 # Office365/SharePoint

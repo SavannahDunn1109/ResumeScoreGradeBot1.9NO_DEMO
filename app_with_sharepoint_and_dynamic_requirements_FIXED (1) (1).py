@@ -71,7 +71,7 @@ def connect_with_azure_app(site_url: str):
         msg = """Missing secrets. Add to .streamlit/secrets.toml:
 
 [sharepoint_azure]
-tenant_id = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
+tenant_id = "d84d447c-ccf0-4085-8083-922bc12d575e"
 client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
 client_secret = "<YOUR_CLIENT_SECRET_VALUE>"
 site_url = "https://eleven090.sharepoint.com/sites/Recruiting"

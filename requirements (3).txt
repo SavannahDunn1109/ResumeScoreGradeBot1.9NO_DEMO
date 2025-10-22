@@ -1,18 +1,10 @@
-streamlit==1.48.1
-pandas==2.3.1
-openpyxl==3.1.5
-PyPDF2==3.0.1
-python-docx==1.2.0
-
-# SharePoint client
-office365-rest-python-client==2.6.2
-
-# Keep what Cloud successfully used earlier
-requests==2.32.5
-urllib3==2.5.0
-cryptography==45.0.6
-lxml==6.0.0
-
-
-
-
+streamlit>=1.37
+msal>=1.29.0
+office365-rest-python-client>=2.5.14
+PyPDF2>=3.0.1
+python-docx>=1.1.0
+pandas>=2.2.2
+openpyxl>=3.1.5
+requests>=2.32.3
+# Optional (for local cookie mode only; skip on Streamlit Cloud)
+browser-cookie3>=0.19.1

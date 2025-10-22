@@ -9,6 +9,12 @@ import pandas as pd
 import streamlit as st
 from docx import Document
 from PyPDF2 import PdfReader
+try:
+    import msal
+except ModuleNotFoundError:
+    import streamlit as st
+    st.error("MSAL is not installed. Make sure `msal` is in requirements.txt and redeploy. If on Streamlit Cloud, set runtime.txt to 3.11.")
+    st.stop()
 
 # Office365/SharePoint
 from office365.sharepoint.client_context import ClientContext

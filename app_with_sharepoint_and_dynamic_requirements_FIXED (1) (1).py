@@ -1,9 +1,7 @@
-# app_with_sharepoint_and_dynamic_requirements_azure.py
 import io
 import os
 import re
 from datetime import date
-
 import pandas as pd
 import streamlit as st
 from docx import Document
@@ -73,11 +71,11 @@ def connect_with_azure_app(site_url: str):
 [sharepoint_azure]
 tenant_id = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
 client_id = "d84d447c-ccf0-4085-8083-922bc12d575e"
-client_secret = "ca8e3d54-69ae-45e8-b129-d35ae045b301" # paste the VALUE you created in Certificates & secrets
+client_secret = "YOUR_SECRET_VALUE"  # paste the VALUE you created in Certificates & secrets
 site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
 authority = "https://login.microsoftonline.com/b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
 scope = "https://eleven090.sharepoint.com/.default"
-
+"""
         raise RuntimeError(msg)
 
 
@@ -87,10 +85,7 @@ def _browser_cookie_available() -> bool:
     return importlib.util.find_spec("browser_cookie3") is not None
 
 def _get_fedauth_rtfa():
-    """
-    Read FedAuth/rtFa from Chrome/Edge only if browser_cookie3 is present.
-    Raises a friendly error if not installed (e.g., Streamlit Cloud).
-    """
+    """Read FedAuth/rtFa from Chrome/Edge if browser_cookie3 is present."""
     if not _browser_cookie_available():
         raise RuntimeError(
             "Local (browser cookies) mode requires the 'browser-cookie3' package, "
@@ -99,6 +94,7 @@ def _get_fedauth_rtfa():
         )
 
     import browser_cookie3  # lazy import
+
     def pick(cj):
         fedauth = rtfa = None
         for c in cj:
@@ -125,12 +121,13 @@ def _get_fedauth_rtfa():
         pass
     return None, None
 
+
 def connect_with_browser_cookies(site_url: str):
-    """Use your existing browser session (MFA already done). Local dev only."""
+    # Use existing browser session (MFA already done). Local dev only.
     fedauth, rtfa = _get_fedauth_rtfa()
     if not (fedauth and rtfa):
         raise RuntimeError(
-            "No SharePoint cookies found. Open the site in Chrome/Edge (non‑incognito), "
+            "No SharePoint cookies found. Open the site in Chrome/Edge (non-incognito), "
             "sign in and complete MFA, then try again."
         )
 
@@ -139,7 +136,7 @@ def connect_with_browser_cookies(site_url: str):
     def _auth(req):
         req.set_header("Cookie", f"FedAuth={fedauth}; rtFa={rtfa}")
 
-    # Monkey‑patch request auth and sanity-check
+    # Monkey-patch request auth and sanity-check
     ctx.authentication_context._authenticate = _auth
     ctx.web.get().execute_query()
     return ctx
@@ -193,26 +190,6 @@ def _extract_date_ranges(text: str):
     t = text.replace("\u2013", "-").replace("\u2014", "-")
     ranges = []
 
-    pat_month_year = re.compile(
-        r"\b(?P<m1>[A-Za-z]{3,9})\s+(?P<y1>(?:19|20)\d{2})\s*[-to]+\s*(?P<m2>Present|Current|[A-Za-z]{3,9})\s*(?P<y2>(?:19|20)\d{2})?\b",
-        flags=re.I
-    )
-    for m in pat_month_year.finditer(t):
-        m1 = _parse_month(m.group("m1")); y1 = _parse_year(m.group("y1"))
-        m2tok = m.group("m2"); y2tok = m.group("y2")
-        if m1 and y1:
-            start = _mk_date(y1, m1)
-            if m2tok and m2tok.lower() in ("present", "current"):
-                end = _present_to_date()
-            else:
-                m2 = _parse_month(m2tok); y2 = _parse_year(y2tok) if y2tok else None
-                if m2 and y2:
-                    end = _mk_date(y2, m2)
-                else:
-                    continue
-            if end > start:
-                ranges.append((start, end))
-
     pat_year_year = re.compile(
         r"\b(?P<y1>(?:19|20)\d{2})\s*[-to]+\s*(?P<y2>Present|Current|(?:19|20)\d{2})\b",
         flags=re.I
@@ -225,30 +202,10 @@ def _extract_date_ranges(text: str):
         if y2tok.lower() in ("present", "current"):
             end = _present_to_date()
         else:
-            y2 = _parse_year(y2tok); 
-            if not y2: 
+            y2 = _parse_year(y2tok)
+            if not y2:
                 continue
             end = _mk_date(y2, 6)
-        if end > start:
-            ranges.append((start, end))
-
-    pat_mmyyyy = re.compile(
-        r"\b(?P<m1>0?[1-9]|1[0-2])/(?P<y1>(?:19|20)\d{2})\s*[-to]+\s*(?P<m2>0?[1-9]|1[0-2])/(?P<y2>(?:19|20)\d{2}|Present|Current)\b",
-        flags=re.I
-    )
-    for m in pat_mmyyyy.finditer(t):
-        m1 = int(m.group("m1")); y1 = _parse_year(m.group("y1"))
-        if not (y1 and 1 <= m1 <= 12):
-            continue
-        start = _mk_date(y1, m1)
-        y2raw = m.group("y2")
-        if y2raw.lower() in ("present", "current"):
-            end = _present_to_date()
-        else:
-            m2 = int(m.group("m2")); y2 = _parse_year(y2raw)
-            if not (y2 and 1 <= m2 <= 12):
-                continue
-            end = _mk_date(y2, m2)
         if end > start:
             ranges.append((start, end))
 
@@ -295,16 +252,14 @@ def classify_level(years: float, jr_max: int, mid_max: int) -> str:
 
 # ======================== REQUIREMENTS & SCORING ========================
 uploaded_req_file = st.file_uploader("📄 Upload Requirements (.txt)", type=["txt"])
-
 KEYWORDS = []
 if uploaded_req_file:
     req_lines = uploaded_req_file.read().decode("utf-8").splitlines()
     for line in req_lines:
         line = line.strip()
-        if line and not any(line.startswith(prefix) for prefix in ("🧠","💼","🛡","⚙️","☁️","👥","🎯","🧾","🧩")):
-            if not line.endswith(":"):
-                KEYWORDS.append(line)
-    st.success(f"✅ Loaded {len(KEYWORDS)} keywords from requirements file.")
+        if line and not line.endswith(":"):
+            KEYWORDS.append(line)
+    st.success(f"✅ Loaded {len(KEYWORDS)} keywords.")
 else:
     st.warning("⚠️ Please upload a requirements .txt file to begin scoring.")
     st.stop()
@@ -313,38 +268,34 @@ st.subheader("⚙️ Scoring & Filters")
 exp_points_per_year = st.number_input("Points per year of experience", 0, 50, 5, 1)
 jr_max = st.number_input("Max years for JUNIOR", 0, 10, 2, 1)
 mid_max = st.number_input("Max years for MID", jr_max, 25, 6, 1)
-enforce_min = st.checkbox("Enforce minimum years of experience filter?", value=False)
-min_years_required = st.number_input("Minimum years (hide resumes below this)", 0, 30, 3, 1)
+enforce_min = st.checkbox("Enforce minimum years?", value=False)
+min_years_required = st.number_input("Minimum years", 0, 30, 3, 1)
 
 def score_resume(text: str):
     kw_score = 0
-    found_keywords = []
+    found = []
     lower_text = text.lower()
     for kw in KEYWORDS:
         if kw.lower() in lower_text:
             kw_score += 10
-            found_keywords.append(kw)
-
-    years, years_source = estimate_years_experience(text)
+            found.append(kw)
+    years, src = estimate_years_experience(text)
     exp_score = years * exp_points_per_year
     total = kw_score + exp_score
-
     return {
-        "years": years,
-        "years_source": years_source,
+        "years": years, "years_source": src,
         "level": classify_level(years, jr_max, mid_max),
-        "kw_score": kw_score,
-        "exp_score": exp_score,
-        "total": total,
-        "keywords_found": ", ".join(found_keywords),
+        "kw_score": kw_score, "exp_score": exp_score,
+        "total": total, "keywords_found": ", ".join(found),
     }
 
 # ======================== MODE & CONNECTION ========================
 st.sidebar.markdown("### Run mode")
 mode = st.sidebar.radio(
     "Choose how to connect",
-    (["Azure App (client secret)", "Demo (no SharePoint)"] + (["Local (browser cookies)"] if _browser_cookie_available() else [])),
-    index=0
+    (["Azure App (client secret)", "Demo (no SharePoint)"] +
+     (["Local (browser cookies)"] if _browser_cookie_available() else [])),
+    index=0,
 )
 
 ctx = None
@@ -379,29 +330,23 @@ if ctx:
         folder_url = f"{LIBRARY}/{FOLDER}"
         folder = ctx.web.get_folder_by_server_relative_url(folder_url)
         files = folder.files
-        ctx.load(files); ctx.execute_query()
+        ctx.load(files)
+        ctx.execute_query()
 
         for file in files:
             filename = file.properties["Name"]
             if not filename.lower().endswith((".pdf", ".docx")):
                 continue
-
             file_url = file.properties["ServerRelativeUrl"]
             file_bytes = download_file(ctx, file_url)
-
-            if filename.lower().endswith(".pdf"):
-                text = extract_text_from_pdf(file_bytes)
-            else:
-                text = extract_text_from_docx(file_bytes)
-
+            text = extract_text_from_pdf(file_bytes) if filename.lower().endswith(".pdf") else extract_text_from_docx(file_bytes)
             result = score_resume(text)
             if enforce_min and result["years"] < float(min_years_required):
                 continue
-
             data.append({
                 "File Name": filename,
                 "Est. Years": result["years"],
-                "Level (Jr/Mid/Sr)": result["level"],
+                "Level": result["level"],
                 "Experience Source": result["years_source"],
                 "Keyword Score": result["kw_score"],
                 "Experience Score": result["exp_score"],
@@ -414,7 +359,7 @@ if ctx:
 df = pd.DataFrame(data)
 if not df.empty:
     df = df.sort_values(
-        ["Level (Jr/Mid/Sr)", "Est. Years", "Total Score"],
+        ["Level", "Est. Years", "Total Score"],
         ascending=[True, False, False]
     ).reset_index(drop=True)
 
@@ -428,8 +373,9 @@ if not df.empty:
 
     if ctx and st.button("📤 Upload Excel to SharePoint"):
         try:
+            output.seek(0)
             target_folder = ctx.web.get_folder_by_server_relative_url(LIBRARY)
-            target_folder.upload_file("resume_scores.xlsx", output)
+            target_folder.upload_file("resume_scores.xlsx", output.getvalue())
             ctx.execute_query()
             st.success("Excel uploaded to SharePoint!")
         except Exception as e:

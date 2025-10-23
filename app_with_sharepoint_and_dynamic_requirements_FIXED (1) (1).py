@@ -73,7 +73,7 @@ def connect_with_azure_app(site_url: str):
 [sharepoint_azure]
 tenant_id = "d84d447c-ccf0-4085-8083-922bc12d575e"
 client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
-client_secret = "<YOUR_CLIENT_SECRET_VALUE>"
+client_secret = "ca8e3d54-69ae-45e8-b129-d35ae045b301"
 site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
 """
         raise RuntimeError(msg)

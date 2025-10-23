@@ -71,11 +71,13 @@ def connect_with_azure_app(site_url: str):
         msg = """Missing secrets. Add to .streamlit/secrets.toml:
 
 [sharepoint_azure]
-tenant_id = "d84d447c-ccf0-4085-8083-922bc12d575e"
-client_id = "090e3e87-bef3-45b7-b27c-57f5cee20845"
-client_secret = "ca8e3d54-69ae-45e8-b129-d35ae045b301"
+tenant_id = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
+client_id = "d84d447c-ccf0-4085-8083-922bc12d575e"
+client_secret = "ca8e3d54-69ae-45e8-b129-d35ae045b301" # paste the VALUE you created in Certificates & secrets
 site_url = "https://eleven090.sharepoint.com/sites/Recruiting"
-"""
+authority = "https://login.microsoftonline.com/b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"
+scope = "https://eleven090.sharepoint.com/.default"
+
         raise RuntimeError(msg)
 
 

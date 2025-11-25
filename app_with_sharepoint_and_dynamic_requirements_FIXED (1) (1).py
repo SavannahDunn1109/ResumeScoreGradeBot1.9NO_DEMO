@@ -67,27 +67,22 @@ def connect_with_azure_app(site_url: str):
 
     except KeyError:
         msg = """Missing secrets. Add to .streamlit/secrets.toml:
-
-from urllib.parse import urlparse
-import msal
-from office365.sharepoint.client_context import ClientContext
-import streamlit as st
-
 @st.cache_resource(show_spinner=False)
 def connect_with_azure_app(site_url: str):
     """
-    #MSAL app-only auth using GUID tenant authority.
+    MSAL app-only auth using GUID tenant authority.
     Permissions: SharePoint -> Application -> Sites.Selected (with site-level grant).
     """
     try:
         s = st.secrets["sharepoint_azure"]
-        tenant_id    = s["tenant_id"]       # MUST be the GUID of your tenant
-        client_id    = s["client_id"]       # YOUR app's Application (client) ID
-        client_secret= s["client_secret"]   # SECRET VALUE (not Secret ID)
-        site_url     = s.get("site_url", site_url)
+        tenant_id     = s["tenant_id"]     # MUST be the GUID of your tenant
+        client_id     = s["client_id"]     # YOUR app's Application (client) ID
+        client_secret = s["client_secret"] # SECRET VALUE (not Secret ID)
+        site_url      = s.get("site_url", site_url)
 
         # Derive host from site_url to build correct resource scope
         parsed = urlparse(site_url)
+
         sp_host = parsed.netloc                      # e.g., "eleven090.sharepoint.com"
         scope   = f"https://{sp_host}/.default"      # resource must match API you call
 

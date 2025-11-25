@@ -127,16 +127,24 @@ def connect_with_azure_app(site_url: str):
         # Secrets missing—give a fill-in template
         msg = """Missing secrets. Add to .streamlit/secrets.toml:
 
+def _missing_sharepoint_secrets_error() -> None:
+    msg = """
+    import importlib
+
+def _browser_cookie_available() -> bool:
+    return importlib.util.find_spec("browser_cookie3") is not None
+
+def _get_fedauth_rtfa():
+    """Read FedAuth/rtFa from Chrome/Edge if browser_cookie3 is present."""
+    ...
+
 [sharepoint_azure]
 tenant_id    = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"   # GUID
 client_id    = "090e3e87-bef3-45b7-b27c-57f5cee20845"   # your app id
 client_secret= "YOUR_SECRET_VALUE"                      # VALUE column
 site_url     = "https://eleven090.sharepoint.com/sites/Recruiting"
 """
-        raise RuntimeError(msg)
-
-        raise RuntimeError(msg)
-
+    raise RuntimeError(msg)
 
 import importlib
 

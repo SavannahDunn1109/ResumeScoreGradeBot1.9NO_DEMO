@@ -74,54 +74,7 @@ def connect_with_azure_app(site_url: str):
     Permissions: SharePoint -> Application -> Sites.Selected (with site-level grant).
     """
     try:
-        s = st.secrets["sharepoint_azure"]
-        tenant_id     = s["tenant_id"]     # MUST be the GUID of your tenant
-        client_id     = s["client_id"]     # YOUR app's Application (client) ID
-        client_secret = s["client_secret"] # SECRET VALUE (not Secret ID)
-        site_url      = s.get("site_url", site_url)
-
-        # Derive host from site_url to build correct resource scope
-        parsed = urlparse(site_url)
-
-        sp_host = parsed.netloc                      # e.g., "eleven090.sharepoint.com"
-        scope   = f"https://{sp_host}/.default"      # resource must match API you call
-
-        # Optional: quick debug (safe—no secrets)
-        st.write({
-            "tenant_id": tenant_id,
-            "client_id": client_id[:8] + "...",
-            "site_host": sp_host,
-            "scope": scope
-        })
-
-        # Sanity: scope host must equal site host
-        if sp_host not in scope:
-            raise RuntimeError(f"Scope host mismatch. scope={scope} site_host={sp_host}")
-
-        authority = f"https://login.microsoftonline.com/{tenant_id}"
-
-        app = msal.ConfidentialClientApplication(
-            client_id=client_id,
-            client_credential=client_secret,
-            authority=authority,
-        )
-
-        token = app.acquire_token_for_client(scopes=[scope])
-        if "access_token" not in token:
-            # Surface the MSAL error cleanly
-            raise RuntimeError(f"MSAL error acquiring token: {token}")
-
-        # Use the token with Office365-REST-Python-Client
-        ctx = ClientContext(site_url).with_access_token(token["access_token"])
-
-        # Light ping to verify auth/site grant
-        ctx.web.get().execute_query()
-        return ctx
-
-    except KeyError:
-        # Secrets missing—give a fill-in template
-        msg = """Missing secrets. Add to .streamlit/secrets.toml:
-
+      
 def _missing_sharepoint_secrets_error() -> None:
     msg = """
     import importlib
@@ -131,7 +84,57 @@ def _browser_cookie_available() -> bool:
 
 def _get_fedauth_rtfa():
     """Read FedAuth/rtFa from Chrome/Edge if browser_cookie3 is present."""
-    ...
+    
+    @st.cache_resource(show_spinner=False)
+def connect_with_azure_app(site_url: str):
+    """
+    MSAL app-only auth using GUID tenant authority.
+    Permissions: SharePoint -> Application -> Sites.Selected (with site-level grant).
+    """
+    try:
+        s = st.secrets["sharepoint_azure"]
+        tenant_id     = s["tenant_id"]      # MUST be the GUID of your tenant
+        client_id     = s["client_id"]      # YOUR app's Application (client) ID
+        client_secret = s["client_secret"]  # SECRET VALUE (not Secret ID)
+        site_url      = s.get("site_url", site_url)
+
+        # Derive host from site_url to build correct resource scope
+        parsed = urlparse(site_url)
+        host = parsed.netloc
+
+        authority = f"https://login.microsoftonline.com/{tenant_id}"
+        scopes = [f"https://{host}/.default"]
+
+        app = msal.ConfidentialClientApplication(
+            client_id=client_id,
+            client_credential=client_secret,
+            authority=authority,
+        )
+        token = app.acquire_token_for_client(scopes=scopes)
+
+        if "access_token" not in token:
+            raise RuntimeError(f"MSAL error: {token}")
+
+        ctx = ClientContext(site_url).with_access_token(token["access_token"])
+        ctx.web.get().execute_query()  # sanity ping
+        return ctx
+
+    except KeyError:
+        # secrets.toml is missing [sharepoint_azure]
+        msg = (
+            "Missing secrets for [sharepoint_azure] in .streamlit/secrets.toml.\n\n"
+            "Add something like:\n"
+            "[sharepoint_azure]\n"
+            'tenant_id    = "YOUR_TENANT_GUID"\n'
+            'client_id    = "YOUR_APP_CLIENT_ID"\n'
+            'client_secret= "YOUR_CLIENT_SECRET_VALUE"\n'
+            'site_url     = "https://eleven090.sharepoint.com/sites/Recruiting"\n'
+        )
+        raise RuntimeError(msg)
+
+    except Exception as e:
+        raise RuntimeError(f"Azure App auth failed: {e}")
+...
 
 [sharepoint_azure]
 tenant_id    = "b7c46a1e-ef8c-4ba8-aeaf-0a29d31fb1be"   # GUID

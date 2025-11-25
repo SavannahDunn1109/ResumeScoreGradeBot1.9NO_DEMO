@@ -91,13 +91,7 @@ def connect_with_azure_app(site_url: str):
     MSAL app-only auth using GUID tenant authority.
     Permissions: SharePoint -> Application -> Sites.Selected (with site-level grant).
     """
-    try:
-        s = st.secrets["sharepoint_azure"]
-        tenant_id     = s["tenant_id"]      # MUST be the GUID of your tenant
-        client_id     = s["client_id"]      # YOUR app's Application (client) ID
-        client_secret = s["client_secret"]  # SECRET VALUE (not Secret ID)
-        site_url      = s.get("site_url", site_url)
-
+    
         # Derive host from site_url to build correct resource scope
         parsed = urlparse(site_url)
         host = parsed.netloc

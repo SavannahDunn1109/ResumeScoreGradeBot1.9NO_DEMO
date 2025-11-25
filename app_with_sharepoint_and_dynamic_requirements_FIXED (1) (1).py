@@ -76,7 +76,7 @@ import streamlit as st
 @st.cache_resource(show_spinner=False)
 def connect_with_azure_app(site_url: str):
     """
-    MSAL app-only auth using GUID tenant authority.
+    #MSAL app-only auth using GUID tenant authority.
     Permissions: SharePoint -> Application -> Sites.Selected (with site-level grant).
     """
     try:

@@ -7,9 +7,12 @@ import streamlit as st
 from docx import Document
 from PyPDF2 import PdfReader
 
+from urllib.parse import urlparse   # ✅ REQUIRED for Azure App auth
+
 # MSAL must be installed via requirements.txt in the app root.
 try:
     import msal
+
 except ModuleNotFoundError:
     st.error(
         "MSAL is not installed. Make sure `msal` is listed in requirements.txt at the app root, "
